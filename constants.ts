@@ -11,6 +11,13 @@ export const PLANETS: Planet[] = [
     radius: 7,        // Smallest
     orbitRadius: 70, 
     orbitPeriod: 12,  // Fast
+    eccentricity: 0.2056,
+    argumentOfPerihelion: 77,
+    axialTilt: 0,
+    rotationPeriodHours: 1407.6,
+    orbitalPeriodDays: 88,
+    distanceAU: 0.39,
+    moons: [],
     temperature: '-180°C ~ 430°C',
     en: {
       name: 'Mercury',
@@ -35,6 +42,13 @@ export const PLANETS: Planet[] = [
     radius: 14,        // Earth size-ish
     orbitRadius: 100,
     orbitPeriod: 20,
+    eccentricity: 0.0068,
+    argumentOfPerihelion: 131,
+    axialTilt: 177,
+    rotationPeriodHours: -5832.5,
+    orbitalPeriodDays: 224.7,
+    distanceAU: 0.72,
+    moons: [],
     temperature: '465°C',
     en: {
       name: 'Venus',
@@ -59,6 +73,15 @@ export const PLANETS: Planet[] = [
     radius: 15,
     orbitRadius: 140,
     orbitPeriod: 30,  // Reference point
+    eccentricity: 0.0167,
+    argumentOfPerihelion: 102,
+    axialTilt: 23,
+    rotationPeriodHours: 23.9,
+    orbitalPeriodDays: 365.2,
+    distanceAU: 1.00,
+    moons: [
+      { name: 'Moon', radius: 4, distance: 28, speed: 8, color: '#e5e5e5' }
+    ],
     temperature: '-88°C ~ 58°C',
     en: {
       name: 'Earth',
@@ -83,6 +106,16 @@ export const PLANETS: Planet[] = [
     radius: 10,        // Smaller than Earth
     orbitRadius: 180,
     orbitPeriod: 45,
+    eccentricity: 0.0934,
+    argumentOfPerihelion: 336,
+    axialTilt: 25,
+    rotationPeriodHours: 24.6,
+    orbitalPeriodDays: 687,
+    distanceAU: 1.52,
+    moons: [
+      { name: 'Phobos', radius: 2, distance: 18, speed: 4, color: '#a8a29e' },
+      { name: 'Deimos', radius: 1.5, distance: 24, speed: 6, color: '#d6d3d1' }
+    ],
     temperature: '-140°C ~ 20°C',
     en: {
       name: 'Mars',
@@ -107,6 +140,23 @@ export const PLANETS: Planet[] = [
     radius: 45,       // Huge
     orbitRadius: 260,
     orbitPeriod: 100, // Slow
+    eccentricity: 0.0489,
+    argumentOfPerihelion: 14,
+    axialTilt: 3,
+    rotationPeriodHours: 9.9,
+    orbitalPeriodDays: 4333,
+    distanceAU: 5.20,
+    rings: {
+        colors: ['#a1a1aa'],
+        innerRadius: 1.4,
+        outerRadius: 1.8,
+        opacity: 0.2
+    },
+    moons: [
+      { name: 'Io', radius: 3, distance: 55, speed: 5, color: '#facc15' },
+      { name: 'Europa', radius: 2.8, distance: 65, speed: 8, color: '#bfdbfe' },
+      { name: 'Ganymede', radius: 4, distance: 80, speed: 12, color: '#9ca3af' }
+    ],
     temperature: '-110°C',
     en: {
       name: 'Jupiter',
@@ -131,6 +181,22 @@ export const PLANETS: Planet[] = [
     radius: 38,       // Large
     orbitRadius: 350,
     orbitPeriod: 150,
+    eccentricity: 0.0565,
+    argumentOfPerihelion: 92,
+    axialTilt: 27,
+    rotationPeriodHours: 10.7,
+    orbitalPeriodDays: 10759,
+    distanceAU: 9.58,
+    rings: {
+        colors: ['#5a5346', '#d6c8a8', '#9e9176'], // Darker inner, Bright main, Outer band
+        innerRadius: 1.2,
+        outerRadius: 2.3,
+        opacity: 0.9
+    },
+    moons: [
+      { name: 'Titan', radius: 3.8, distance: 60, speed: 10, color: '#fbbf24' },
+      { name: 'Enceladus', radius: 2, distance: 48, speed: 6, color: '#f1f5f9' }
+    ],
     temperature: '-140°C',
     en: {
       name: 'Saturn',
@@ -155,6 +221,21 @@ export const PLANETS: Planet[] = [
     radius: 25,
     orbitRadius: 440,
     orbitPeriod: 220, // Very slow
+    eccentricity: 0.0457,
+    argumentOfPerihelion: 170,
+    axialTilt: 98,
+    rotationPeriodHours: -17.2,
+    orbitalPeriodDays: 30687,
+    distanceAU: 19.22,
+    rings: {
+        colors: ['#cffafe'],
+        innerRadius: 1.5,
+        outerRadius: 2.0,
+        opacity: 0.3
+    },
+    moons: [
+       { name: 'Titania', radius: 2.5, distance: 38, speed: 9, color: '#e2e8f0' }
+    ],
     temperature: '-195°C',
     en: {
       name: 'Uranus',
@@ -179,6 +260,21 @@ export const PLANETS: Planet[] = [
     radius: 25,
     orbitRadius: 520,
     orbitPeriod: 300, // Slowest
+    eccentricity: 0.0113,
+    argumentOfPerihelion: 44,
+    axialTilt: 28,
+    rotationPeriodHours: 16.1,
+    orbitalPeriodDays: 60190,
+    distanceAU: 30.05,
+    rings: {
+        colors: ['#bfdbfe'],
+        innerRadius: 1.5,
+        outerRadius: 2.0,
+        opacity: 0.2
+    },
+    moons: [
+       { name: 'Triton', radius: 3, distance: 40, speed: 11, color: '#f8fafc', retrograde: true }
+    ],
     temperature: '-200°C',
     en: {
       name: 'Neptune',
@@ -203,6 +299,15 @@ export const PLANETS: Planet[] = [
     radius: 8,        // Tiny (smaller than Mercury)
     orbitRadius: 590, // Furthest out
     orbitPeriod: 400, // Very slow
+    eccentricity: 0.2488,
+    argumentOfPerihelion: 224,
+    axialTilt: 120,
+    rotationPeriodHours: 153.3,
+    orbitalPeriodDays: 90560,
+    distanceAU: 39.48,
+    moons: [
+       { name: 'Charon', radius: 4, distance: 15, speed: 14, color: '#9ca3af' }
+    ],
     temperature: '-225°C',
     en: {
       name: 'Pluto',

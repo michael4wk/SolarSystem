@@ -77,6 +77,7 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ planet, onClose, language }) => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
+          {/* Temperature */}
           <div className="bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
             <div className="flex items-center gap-2 text-orange-400 mb-1">
               <Thermometer size={16} />
@@ -84,12 +85,47 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ planet, onClose, language }) => {
             </div>
             <p className="font-mono text-sm">{planet.temperature}</p>
           </div>
+
+          {/* Rotation Period */}
+          <div className="bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+            <div className="flex items-center gap-2 text-purple-400 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.54 15H17a2 2 0 0 0-2 2v4.54"/><path d="M7 3.34V5a3 3 0 0 0 3 3v0a2 2 0 0 1 2 2v0a9 9 0 0 1-9 9"/><path d="M11 21.95V18a2 2 0 0 0-2-2v-4.5"/></svg>
+              <span className="text-xs font-bold uppercase">{language === 'zh' ? '自转周期' : 'Rotation'}</span>
+            </div>
+            <p className="font-mono text-sm">
+              {Math.abs(planet.rotationPeriodHours) < 72 
+                ? `${Math.abs(planet.rotationPeriodHours)} ${language === 'zh' ? '小时' : 'h'}` 
+                : `${(Math.abs(planet.rotationPeriodHours) / 24).toFixed(1)} ${language === 'zh' ? '天' : 'd'}`}
+            </p>
+          </div>
+
+          {/* Orbital Period */}
           <div className="bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
             <div className="flex items-center gap-2 text-cyan-400 mb-1">
               <Activity size={16} />
-              <span className="text-xs font-bold uppercase">{language === 'zh' ? '轨道周期' : 'Orbit'}</span>
+              <span className="text-xs font-bold uppercase">{language === 'zh' ? '公转周期' : 'Orbit'}</span>
             </div>
-            <p className="font-mono text-sm">{planet.orbitPeriod}s ({language === 'zh' ? '模拟' : 'Scaled'})</p>
+            <p className="font-mono text-sm">
+              {planet.orbitalPeriodDays < 730
+                ? `${planet.orbitalPeriodDays} ${language === 'zh' ? '天' : 'd'}`
+                : `${(planet.orbitalPeriodDays / 365.25).toFixed(1)} ${language === 'zh' ? '年' : 'y'}`}
+            </p>
+          </div>
+
+          {/* Distance from Sun */}
+          <div className="bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+            <div className="flex items-center gap-2 text-yellow-400 mb-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              <span className="text-xs font-bold uppercase">{language === 'zh' ? '距离太阳' : 'Distance'}</span>
+            </div>
+            <p className="font-mono text-sm">
+              {planet.distanceAU} AU
+            </p>
+            <p className="font-mono text-xs text-slate-400 mt-1">
+              ≈ {(planet.distanceAU * 8.317) < 60
+                  ? `${(planet.distanceAU * 8.317).toFixed(1)} ${language === 'zh' ? '光分' : 'light-min'}`
+                  : `${(planet.distanceAU * 8.317 / 60).toFixed(1)} ${language === 'zh' ? '光时' : 'light-hours'}`}
+            </p>
           </div>
         </div>
 

@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import SolarSystemSVG from './components/SolarSystemSVG';
 import InfoPanel from './components/InfoPanel';
 import { Planet, Language } from './types';
-import { Rocket, Languages } from 'lucide-react';
+import { Rocket, Languages, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
 
 const App: React.FC = () => {
   const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null);
   const [language, setLanguage] = useState<Language>('zh'); // Default to Chinese as requested implies interest
+  const [showAsteroids, setShowAsteroids] = useState(true);
+  const [showKuiper, setShowKuiper] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handlePlanetSelect = (planet: Planet) => {
     setSelectedPlanet(planet);
@@ -36,14 +39,51 @@ const App: React.FC = () => {
           </p>
         </div>
 
-        {/* Language Toggle */}
-        <button 
-            onClick={toggleLanguage}
-            className="pointer-events-auto flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700 text-white px-4 py-2 rounded-full backdrop-blur-md border border-slate-600 transition-all shadow-lg font-mono text-sm"
-        >
-            <Languages size={16} />
-            <span>{language === 'en' ? 'CN' : 'EN'}</span>
-        </button>
+        <div className="flex gap-2 pointer-events-auto relative">
+            {/* Settings Toggle */}
+            <button 
+                onClick={() => setShowSettings(!showSettings)}
+                className="flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-white w-10 h-10 rounded-full backdrop-blur-md border border-slate-600 transition-all shadow-lg"
+            >
+                <Settings size={20} />
+            </button>
+
+            {/* Language Toggle */}
+            <button 
+                onClick={toggleLanguage}
+                className="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700 text-white px-4 py-2 rounded-full backdrop-blur-md border border-slate-600 transition-all shadow-lg font-mono text-sm"
+            >
+                <Languages size={16} />
+                <span>{language === 'en' ? 'CN' : 'EN'}</span>
+            </button>
+
+            {/* Settings Dropdown */}
+            {showSettings && (
+                <div className="absolute top-12 right-0 w-64 bg-slate-800/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl p-4 flex flex-col gap-4 z-50">
+                    <h3 className="text-white font-semibold border-b border-slate-700 pb-2">
+                        {language === 'zh' ? '显示设置' : 'Display Settings'}
+                    </h3>
+                    
+                    <div className="flex justify-between items-center">
+                        <span className="text-slate-300 text-sm">
+                            {language === 'zh' ? '小行星带' : 'Asteroid Belt'}
+                        </span>
+                        <button onClick={() => setShowAsteroids(!showAsteroids)} className="text-blue-400">
+                            {showAsteroids ? <ToggleRight size={24} /> : <ToggleLeft size={24} className="text-slate-500" />}
+                        </button>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                        <span className="text-slate-300 text-sm">
+                            {language === 'zh' ? '柯伊伯带' : 'Kuiper Belt'}
+                        </span>
+                        <button onClick={() => setShowKuiper(!showKuiper)} className="text-blue-400">
+                            {showKuiper ? <ToggleRight size={24} /> : <ToggleLeft size={24} className="text-slate-500" />}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -52,6 +92,8 @@ const App: React.FC = () => {
           onSelectPlanet={handlePlanetSelect} 
           selectedPlanetId={selectedPlanet?.id || null}
           language={language}
+          showAsteroidBelt={showAsteroids}
+          showKuiperBelt={showKuiper}
         />
         
         {/* Info Panel Slide-over */}
