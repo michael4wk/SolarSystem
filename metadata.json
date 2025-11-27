@@ -1,0 +1,5 @@
+{
+  "name": "Solar System Explorer AI",
+  "description": "An interactive, animated SVG visualization of the Solar System. Click on planets to learn facts and ask specific questions using Google Gemini AI.",
+  "requestFramePermissions": []
+}
