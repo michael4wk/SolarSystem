@@ -68,6 +68,21 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ planet, onClose, language }) => {
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Planet Image - Prefer Photo/Render, fallback to Texture */}
+        {(planet.photo || planet.texture) && (
+            <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black shadow-lg border border-slate-700/50 flex items-center justify-center">
+                <img 
+                    src={planet.photo || planet.texture} 
+                    alt={content.name} 
+                    className="w-full h-full object-contain p-4 hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
+                />
+                <div className="absolute bottom-2 right-2 text-[10px] text-slate-400 font-mono opacity-60">
+                    NASA/JPL-Caltech
+                </div>
+            </div>
+        )}
+
         {/* Main Description */}
         <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
           <p className="text-lg leading-relaxed font-light text-slate-200">

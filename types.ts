@@ -20,6 +20,8 @@ export interface Planet {
   rotationPeriodHours: number; // Real rotation period in hours
   orbitalPeriodDays: number; // Real orbital period in Earth days
   distanceAU: number; // Distance from Sun in AU
+  texture: string; // Path to texture image
+  photo?: string; // Path to high-res photo/render (optional, defaults to texture if missing)
   axialTilt?: number; // Axial tilt in degrees (visual rotation)
   rings?: {
     colors: string[];
