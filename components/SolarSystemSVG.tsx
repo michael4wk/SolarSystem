@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { PLANETS } from '../constants';
+import { PLANETS, SUN_DATA } from '../constants';
 import { Planet, Language } from '../types';
 
 interface SolarSystemSVGProps {
@@ -72,6 +72,20 @@ const SolarSystemSVG: React.FC<SolarSystemSVGProps> = ({
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
           }
+          @keyframes moon-occlusion-back {
+            0% { opacity: 1; }
+            49% { opacity: 1; }
+            50% { opacity: 0; }
+            99% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+          @keyframes moon-occlusion-front {
+            0% { opacity: 0; }
+            49% { opacity: 0; }
+            50% { opacity: 1; }
+            99% { opacity: 1; }
+            100% { opacity: 0; }
+          }
         `}
       </style>
 
@@ -93,6 +107,14 @@ const SolarSystemSVG: React.FC<SolarSystemSVGProps> = ({
             <stop offset="100%" stopColor="#050b14" stopOpacity="0" />
           </radialGradient>
 
+          {/* Planet Sphere Shader - Gives 3D effect */}
+          <radialGradient id="planetShadow" cx="30%" cy="30%" r="70%" fx="30%" fy="30%">
+             <stop offset="0%" stopColor="white" stopOpacity="0.1" />
+             <stop offset="50%" stopColor="black" stopOpacity="0.1" />
+             <stop offset="85%" stopColor="black" stopOpacity="0.4" />
+             <stop offset="100%" stopColor="black" stopOpacity="0.7" />
+          </radialGradient>
+
           {/* Expanded filter region to prevent square clipping */}
           <filter id="sunGlowFilter" x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur stdDeviation="12" result="coloredBlur" />
@@ -109,10 +131,43 @@ const SolarSystemSVG: React.FC<SolarSystemSVGProps> = ({
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
+          {/* Define patterns for textures */}
+          <pattern id="sun-texture" patternUnits="objectBoundingBox" width="1" height="1">
+             <image href="/textures/2k_sun.jpg" x="0" y="0" width="200" height="200" preserveAspectRatio="xMidYMid slice" />
+          </pattern>
+          
+          {PLANETS.map(planet => (
+             planet.texture && (
+                <pattern key={`pat-${planet.id}`} id={`tex-${planet.id}`} patternUnits="objectBoundingBox" width="1" height="1">
+                    <image 
+                        href={planet.texture} 
+                        x="0" 
+                        y="0" 
+                        width={planet.radius * 2} 
+                        height={planet.radius * 2} 
+                        preserveAspectRatio="xMidYMid slice" // Fix for elliptical distortion
+                    />
+                </pattern>
+             )
+          ))}
+
         </defs>
 
         {/* Deep Space Background Glow */}
         <rect x="-1500" y="-1500" width="3000" height="3000" fill="url(#spaceGlow)" className="pointer-events-none" />
+
+        {/* Milky Way Background Image - Subtle */}
+        <image 
+            href="/textures/2k_stars_milky_way.jpg" 
+            x="-1500" 
+            y="-1500" 
+            width="3000" 
+            height="3000" 
+            opacity="0.4" 
+            className="pointer-events-none"
+            preserveAspectRatio="xMidYMid slice"
+        />
 
         {/* Starfield */}
         <g className="pointer-events-none">
@@ -162,14 +217,23 @@ const SolarSystemSVG: React.FC<SolarSystemSVGProps> = ({
           </g>
         )}
 
-        {/* Sun */}
-        <g className="pointer-events-none">
+        {/* Sun - Clickable */}
+        <g 
+            className="cursor-pointer group outline-none"
+            onClick={() => onSelectPlanet(SUN_DATA)}
+        >
+            {/* Selection Halo for Sun */}
+            {selectedPlanetId === 'sun' && (
+                <circle cx="0" cy="0" r="120" fill="none" stroke="white" strokeWidth="2" opacity="0.5" className="animate-pulse pointer-events-none"/>
+            )}
             {/* Outer corona */}
-            <circle cx="0" cy="0" r="100" fill="url(#sunGradient)" opacity="0.3" />
+            <circle cx="0" cy="0" r="100" fill="url(#sunGradient)" opacity="0.3" className="transition-opacity group-hover:opacity-50" />
             {/* Core */}
-            <circle cx="0" cy="0" r="60" fill="#fbbf24" filter="url(#sunGlowFilter)" />
+            <circle cx="0" cy="0" r="60" fill="url(#sun-texture)" filter="url(#sunGlowFilter)" className="transition-all duration-300 group-hover:brightness-110" />
+            {/* Sun Overlay for heat effect */}
+            <circle cx="0" cy="0" r="60" fill="#fbbf24" opacity="0.2" />
             {/* Sun Label */}
-             <text x="0" y="5" textAnchor="middle" fill="#78350f" fontSize="14" fontWeight="bold" letterSpacing="1px" className="opacity-80" style={{ mixBlendMode: 'overlay' }}>
+             <text x="0" y="5" textAnchor="middle" fill="#78350f" fontSize="14" fontWeight="bold" letterSpacing="1px" className="opacity-80 pointer-events-none" style={{ mixBlendMode: 'overlay' }}>
                 {language === 'zh' ? '太阳' : 'SUN'}
             </text>
         </g>
@@ -230,96 +294,105 @@ const SolarSystemSVG: React.FC<SolarSystemSVGProps> = ({
 
                       {/* Tilted System (Planet Body, Rings, Moons) */}
                       <g transform={`rotate(${planet.axialTilt || 0})`}>
-                          {/* Planet Circle */}
+                          
+                          {/* 1. BACK RINGS (Draw BEFORE planet body) */}
+                          {planet.rings && (
+                             <g opacity={planet.rings.opacity} className="pointer-events-none">
+                                {planet.id === 'saturn' ? (
+                                    // Saturn Back Rings
+                                    <>
+                                        <path d={`M -${planet.radius * 1.35} 0 A ${planet.radius * 1.35} ${planet.radius * 1.35 * 0.4} 0 0 1 ${planet.radius * 1.35} 0`} fill="none" stroke={planet.rings.colors[0]} strokeWidth={planet.radius * 0.3} />
+                                        <path d={`M -${planet.radius * 1.72} 0 A ${planet.radius * 1.72} ${planet.radius * 1.72 * 0.4} 0 0 1 ${planet.radius * 1.72} 0`} fill="none" stroke={planet.rings.colors[1]} strokeWidth={planet.radius * 0.42} />
+                                        <path d={`M -${planet.radius * 2.15} 0 A ${planet.radius * 2.15} ${planet.radius * 2.15 * 0.4} 0 0 1 ${planet.radius * 2.15} 0`} fill="none" stroke={planet.rings.colors[2]} strokeWidth={planet.radius * 0.3} />
+                                    </>
+                                ) : (
+                                    // Generic Back Rings (Top Half)
+                                    <path
+                                        d={`M -${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} 0 A ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2 * 0.4} 0 0 1 ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} 0`}
+                                        fill="none"
+                                        stroke={planet.rings.colors[0]}
+                                        strokeWidth={planet.radius * (planet.rings.outerRadius - planet.rings.innerRadius)}
+                                    />
+                                )}
+                             </g>
+                          )}
+
+                          {/* 2. BACK MOONS (Draw BEFORE planet body) */}
+                          {planet.moons && planet.moons.map((moon, idx) => {
+                              const dist = moon.distance;
+                              const moonPathData = `M ${dist} 0 A ${dist} ${dist * 0.4} 0 1 0 ${-dist} 0 A ${dist} ${dist * 0.4} 0 1 0 ${dist} 0`;
+                              
+                              return (
+                                <g key={`back-${idx}`} className="pointer-events-none">
+                                    <g style={{ 
+                                        offsetPath: `path('${moonPathData}')`,
+                                        animation: `
+                                            moon-move ${moon.speed}s linear infinite ${moon.retrograde ? 'reverse' : 'normal'},
+                                            moon-occlusion-back ${moon.speed}s steps(1) infinite ${moon.retrograde ? 'reverse' : 'normal'}
+                                        `,
+                                    }}>
+                                        <circle r={moon.radius} fill={moon.color} opacity="0.9" />
+                                    </g>
+                                </g>
+                              );
+                          })}
+
+                          {/* 3. PLANET BODY */}
+                          {/* Planet Circle with Texture and Shader */}
                           <circle
                             r={planet.radius}
-                            fill={planet.color}
-                            filter="url(#planetGlow)"
-                            className="transition-all duration-300 group-hover:filter-none group-hover:brightness-110"
+                            fill={planet.texture ? `url(#tex-${planet.id})` : planet.color}
+                            className="transition-all duration-300 group-hover:brightness-110"
+                          />
+                          
+                          {/* 3D Spherical Overlay (Shadow/Highlight) */}
+                          <circle
+                             r={planet.radius}
+                             fill="url(#planetShadow)"
+                             className="pointer-events-none"
                           />
 
-                          {/* Planetary Rings */}
+                          {/* 4. FRONT RINGS (Draw AFTER planet body) */}
                           {planet.rings && (
                             <g opacity={planet.rings.opacity} className="pointer-events-none">
                                 {planet.id === 'saturn' ? (
-                                    // Saturn Special High-Fidelity Rings
+                                    // Saturn Front Rings
                                     <>
-                                        {/* C Ring (Inner - Darker) */}
-                                        <ellipse
-                                          rx={planet.radius * 1.35}
-                                          ry={planet.radius * 1.35 * 0.4}
-                                          fill="none"
-                                          stroke={planet.rings.colors[0]}
-                                          strokeWidth={planet.radius * 0.3}
-                                        />
-                                        {/* B Ring (Middle - Brightest & Widest) */}
-                                        <ellipse
-                                          rx={planet.radius * 1.72}
-                                          ry={planet.radius * 1.72 * 0.4}
-                                          fill="none"
-                                          stroke={planet.rings.colors[1]}
-                                          strokeWidth={planet.radius * 0.42}
-                                        />
-                                        {/* Cassini Division (Gap - Dark ring to emphasize separation) */}
-                                        <ellipse
-                                          rx={planet.radius * 1.95}
-                                          ry={planet.radius * 1.95 * 0.4}
-                                          fill="none"
-                                          stroke="#000000"
-                                          strokeOpacity="0.2"
-                                          strokeWidth={planet.radius * 0.05}
-                                        />
-                                        {/* A Ring (Outer) */}
-                                        <ellipse
-                                          rx={planet.radius * 2.15}
-                                          ry={planet.radius * 2.15 * 0.4}
-                                          fill="none"
-                                          stroke={planet.rings.colors[2]}
-                                          strokeWidth={planet.radius * 0.3}
-                                        />
-                                        {/* Subtle highlight on B Ring */}
-                                        <ellipse
-                                          rx={planet.radius * 1.7}
-                                          ry={planet.radius * 1.7 * 0.4}
-                                          fill="none"
-                                          stroke="white"
-                                          strokeWidth="1"
-                                          strokeOpacity="0.15"
-                                        />
+                                        <path d={`M ${planet.radius * 1.35} 0 A ${planet.radius * 1.35} ${planet.radius * 1.35 * 0.4} 0 0 1 -${planet.radius * 1.35} 0`} fill="none" stroke={planet.rings.colors[0]} strokeWidth={planet.radius * 0.3} />
+                                        <path d={`M ${planet.radius * 1.72} 0 A ${planet.radius * 1.72} ${planet.radius * 1.72 * 0.4} 0 0 1 -${planet.radius * 1.72} 0`} fill="none" stroke={planet.rings.colors[1]} strokeWidth={planet.radius * 0.42} />
+                                        <path d={`M ${planet.radius * 1.95} 0 A ${planet.radius * 1.95} ${planet.radius * 1.95 * 0.4} 0 0 1 -${planet.radius * 1.95} 0`} fill="none" stroke="#000000" strokeOpacity="0.2" strokeWidth={planet.radius * 0.05} />
+                                        <path d={`M ${planet.radius * 2.15} 0 A ${planet.radius * 2.15} ${planet.radius * 2.15 * 0.4} 0 0 1 -${planet.radius * 2.15} 0`} fill="none" stroke={planet.rings.colors[2]} strokeWidth={planet.radius * 0.3} />
+                                        <path d={`M ${planet.radius * 1.7} 0 A ${planet.radius * 1.7} ${planet.radius * 1.7 * 0.4} 0 0 1 -${planet.radius * 1.7} 0`} fill="none" stroke="white" strokeWidth="1" strokeOpacity="0.15" />
                                     </>
                                 ) : (
-                                    // Generic Rings for other planets
+                                    // Generic Front Rings (Bottom Half)
                                     <>
-                                        <ellipse
-                                          rx={planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2}
-                                          ry={planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2 * 0.4}
-                                          fill="none"
-                                          stroke={planet.rings.colors[0]}
-                                          strokeWidth={planet.radius * (planet.rings.outerRadius - planet.rings.innerRadius)}
+                                        <path
+                                            d={`M ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} 0 A ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2 * 0.4} 0 0 1 -${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} 0`}
+                                            fill="none"
+                                            stroke={planet.rings.colors[0]}
+                                            strokeWidth={planet.radius * (planet.rings.outerRadius - planet.rings.innerRadius)}
                                         />
-                                        {/* Detail ring for visual enhancement */}
-                                        <ellipse
-                                          rx={planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2}
-                                          ry={planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2 * 0.4}
-                                          fill="none"
-                                          stroke="white"
-                                          strokeWidth="0.5"
-                                          strokeOpacity="0.3"
+                                        <path
+                                            d={`M ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} 0 A ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} ${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2 * 0.4} 0 0 1 -${planet.radius * (planet.rings.innerRadius + planet.rings.outerRadius) / 2} 0`}
+                                            fill="none"
+                                            stroke="white"
+                                            strokeWidth="0.5"
+                                            strokeOpacity="0.3"
                                         />
                                     </>
                                 )}
                             </g>
                           )}
 
-                          {/* Moons */}
+                          {/* 5. FRONT MOONS (Draw AFTER planet body) */}
                           {planet.moons && planet.moons.map((moon, idx) => {
                               const dist = moon.distance;
-                              // Moon path: Flattened ellipse to match the perspective (rx=dist, ry=dist*0.4)
                               const moonPathData = `M ${dist} 0 A ${dist} ${dist * 0.4} 0 1 0 ${-dist} 0 A ${dist} ${dist * 0.4} 0 1 0 ${dist} 0`;
                               
                               return (
-                                <g key={idx} className="pointer-events-none">
-                                    {/* Moon Orbit Path */}
+                                <g key={`front-${idx}`} className="pointer-events-none">
+                                    {/* Moon Orbit Path (Only drawn once, usually fine here or in back group) */}
                                     <path 
                                       d={moonPathData}
                                       fill="none" 
@@ -327,16 +400,14 @@ const SolarSystemSVG: React.FC<SolarSystemSVGProps> = ({
                                       strokeOpacity="0.15" 
                                       strokeWidth="0.5" 
                                     />
-                                    {/* Moving Moon */}
                                     <g style={{ 
                                         offsetPath: `path('${moonPathData}')`,
-                                        animation: `moon-move ${moon.speed}s linear infinite ${moon.retrograde ? 'reverse' : 'normal'}`,
+                                        animation: `
+                                            moon-move ${moon.speed}s linear infinite ${moon.retrograde ? 'reverse' : 'normal'},
+                                            moon-occlusion-front ${moon.speed}s steps(1) infinite ${moon.retrograde ? 'reverse' : 'normal'}
+                                        `,
                                     }}>
-                                        <circle 
-                                          r={moon.radius} 
-                                          fill={moon.color} 
-                                          opacity="0.9"
-                                        />
+                                        <circle r={moon.radius} fill={moon.color} opacity="0.9" />
                                     </g>
                                 </g>
                               );
